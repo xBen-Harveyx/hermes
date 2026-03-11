@@ -7,7 +7,7 @@ At startup, it:
 - detects the default gateway
 - runs a traceroute and captures hop 2 as the first hop past the gateway
 - starts five ongoing ping checks
-- schedules a speed test every 5 minutes
+- runs a speed test immediately at startup, then every 5 minutes
 - stops automatically after 30 minutes unless you stop it earlier with `Ctrl+C`
 
 The five ping targets are:
@@ -17,6 +17,23 @@ The five ping targets are:
 - `google.com`
 - `atnetplus.com`
 - `cloudflare.com`
+
+## Project Structure
+
+The codebase is organized into focused internal packages:
+
+- `internal/app`
+  - session lifecycle orchestration and startup summary
+- `internal/config`
+  - default intervals, runtime constants, and default ping targets
+- `internal/diag`
+  - OS command execution and network discovery helpers
+- `internal/monitor`
+  - continuous ping monitoring and periodic speed test loops
+- `internal/logx`
+  - timestamped line-oriented file logger
+
+`main.go` remains a thin entrypoint that calls into `internal/app`.
 
 ## Requirements
 
@@ -105,7 +122,7 @@ Ping failures are logged continuously. If a host stops responding or cannot be r
 
 ## Speed Test Behavior
 
-Every 5 minutes, Hermes runs this PowerShell command on Windows:
+At startup and then every 5 minutes, Hermes runs this PowerShell command on Windows:
 
 ```powershell
 irm asheroto.com/speedtest | iex
